@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en" x-data="{
+  dark: localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&window.matchMedia('(prefers-color-scheme: dark)').matches),
+  scrolled: false,
+  mobileMenu: false,
+  progress: 0
+}" :class="{'dark':dark}" x-init="
+  $watch('dark', v => localStorage.setItem('theme', v ? 'dark' : 'light'));
+  window.addEventListener('scroll', () => {
+    scrolled = window.scrollY > 20;
+    progress = Math.min(100, Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100));
+  }, { passive: true });
+" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="WasteNot — Food Rescue &amp; Donation App, a final year project by Ayesha, sponsored by SOS Children's Village Sialkot."/>
+  <meta name="author" content="Ayesha"/>
+  <meta property="og:title" content="WasteNot — Food Rescue &amp; Donation App · Case Study by Ayesha"/>
+  <meta property="og:type" content="article"/>
+  <title>WasteNot — Food Rescue &amp; Donation App · Case Study — Ayesha</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { display: ['Inter','sans-serif'], body: ['Inter','sans-serif'] },
+          colors: { accent: '#FF6B2B', 'accent-light': '#FF8F5C' }
+        }
+      }
+    }
+  </script>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;}
+    html{font-family:'Inter',sans-serif;}
+    h1,h2,h3,h4,h5,h6{font-family:'Inter',sans-serif;}
+    ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:transparent;}::-webkit-scrollbar-thumb{background:#FF6B2B;border-radius:99px;}
+    body{transition:background-color .3s,color .3s;}
+    body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4;}
+    .nav-link{position:relative;}
+    .nav-link::after{content:'';position:absolute;bottom:-2px;left:0;width:0;height:1.5px;background:currentColor;transition:width .25s cubic-bezier(.4,0,.2,1);}
+    .nav-link:hover::after{width:100%;}
+    .btn-primary{position:relative;overflow:hidden;}
+    .btn-primary::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:rgba(255,255,255,.18);transform:skewX(-20deg);transition:left .4s cubic-bezier(.4,0,.2,1);}
+    .btn-primary:hover::after{left:160%;}
+    [x-cloak]{display:none!important;}
+    .photo-frame{position:relative;overflow:hidden;background:#e4e4e7;}
+    .photo-frame img{width:100%;height:100%;object-fit:cover;display:block;}
+
+    /* Reading progress */
+    .progress-bar{position:fixed;top:0;left:0;height:3px;background:#FF6B2B;z-index:100;transition:width .1s linear;}
+
+    /* Reveal */
+    .reveal{opacity:0;transform:translateY(22px);transition:opacity .55s cubic-bezier(.4,0,.2,1),transform .55s cubic-bezier(.4,0,.2,1);}
+    .reveal.visible{opacity:1;transform:translateY(0);}
+    .d1{transition-delay:.07s}.d2{transition-delay:.14s}.d3{transition-delay:.21s}.d4{transition-delay:.28s}
+
+    /* Case study prose */
+    .prose-cs h2{font-family:'Inter',sans-serif;font-size:1.55rem;font-weight:700;margin:2.75rem 0 1rem;line-height:1.25;}
+    .prose-cs h3{font-family:'Inter',sans-serif;font-size:1.15rem;font-weight:700;margin:2rem 0 .6rem;line-height:1.3;color:#FF6B2B;}
+    .prose-cs p{margin:0 0 1.4rem;line-height:1.82;color:#52525b;}
+    .dark .prose-cs p{color:#a1a1aa;}
+    .prose-cs ul{margin:0 0 1.4rem 1.5rem;list-style:disc;}
+    .prose-cs li{margin-bottom:.45rem;line-height:1.7;color:#52525b;}
+    .dark .prose-cs li{color:#a1a1aa;}
+    .prose-cs blockquote{border-left:3px solid #FF6B2B;padding:.75rem 1.25rem;margin:0 0 1.8rem;background:#fff7f4;border-radius:0 8px 8px 0;}
+    .dark .prose-cs blockquote{background:#27272a;}
+    .prose-cs blockquote p{color:#52525b;font-style:italic;margin:0;}
+    .dark .prose-cs blockquote p{color:#a1a1aa;}
+    .prose-cs hr{border:none;border-top:1px solid #e4e4e7;margin:2.5rem 0;}
+    .dark .prose-cs hr{border-top-color:#27272a;}
+    .prose-cs a{color:#FF6B2B;text-decoration:underline;text-underline-offset:3px;}
+
+    /* Stat card */
+    .stat-card{border-left:3px solid #FF6B2B;}
+
+    /* Image caption */
+    .img-caption{font-size:.8rem;color:#a1a1aa;text-align:center;margin-top:.6rem;}
+
+    /* Step badge */
+    .step-badge{width:2rem;height:2rem;min-width:2rem;border-radius:50%;background:#FF6B2B;color:#fff;font-family:'Inter',sans-serif;font-weight:700;font-size:.85rem;display:flex;align-items:center;justify-content:center;}
+
+    /* card hover */
+    .card-h{transition:transform .28s cubic-bezier(.4,0,.2,1),border-color .18s;}
+    .card-h:hover{transform:translateY(-4px);}
+
+    /* Phone device mockup — shows full mobile screenshots without cropping */
+    .phone-mock{max-width:250px;margin:0 auto;width:100%;}
+    .phone-mock.lg{max-width:290px;}
+    .phone-body{position:relative;background:linear-gradient(160deg,#232326,#0a0a0b);border-radius:2.3rem;padding:22px 10px 14px;box-shadow:0 30px 50px -20px rgba(0,0,0,.35),0 0 0 1px rgba(0,0,0,.06);}
+    .dark .phone-body{box-shadow:0 30px 50px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.06);}
+    .phone-notch{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:38%;height:14px;background:#0a0a0b;border-radius:10px;z-index:3;}
+    .phone-notch::before{content:'';position:absolute;left:14px;top:50%;transform:translateY(-50%);width:5px;height:5px;border-radius:50%;background:#1f1f22;}
+    .phone-screen{position:relative;overflow:hidden;border-radius:1.5rem;background:#e4e4e7;}
+    .phone-screen img{width:100%;height:100%;object-fit:cover;display:block;}
+  </style>
+</head>
+<body class="bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-body antialiased">
+
+  <!-- Reading progress bar -->
+  <div class="progress-bar" :style="`width:${progress}%`" role="progressbar" :aria-valuenow="progress" aria-valuemin="0" aria-valuemax="100" aria-label="Reading progress"></div>
+
+  <!-- ═══ NAV ═══ -->
+  <header class="fixed top-0.5 left-0 right-0 z-50 transition-all duration-300"
+    :class="scrolled ? 'bg-white/90 dark:bg-zinc-950/90 backdrop-blur-md shadow-sm shadow-black/5' : 'bg-transparent'">
+    <nav class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between" aria-label="Main navigation">
+      <a href="index.html" class="font-display font-bold text-xl tracking-tight z-10">
+        <span class="text-zinc-900 dark:text-white">aye</span><span class="text-accent">sha</span>
+      </a>
+      <ul class="hidden md:flex items-center gap-8 text-sm font-medium" role="list">
+        <li><a href="index.html#services" class="nav-link text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Skills</a></li>
+        <li><a href="projects.html" class="nav-link text-accent font-medium">Work</a></li>
+        <li><a href="index.html#about" class="nav-link text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">About</a></li>
+        <li><a href="index.html#ads" class="nav-link text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Meta Ads</a></li>
+        <li><a href="index.html#contact" class="nav-link text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors">Contact</a></li>
+      </ul>
+      <div class="flex items-center gap-3">
+        <button @click="dark=!dark"
+          class="w-9 h-9 flex items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+          :aria-label="dark ? 'Light mode' : 'Dark mode'">
+          <svg x-show="!dark" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          <svg x-show="dark" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364-6.364l-.707.707M6.343 17.657l-.707.707M17.657 17.657l-.707-.707M6.343 6.343l-.707-.707M12 8a4 4 0 100 8 4 4 0 000-8z"/></svg>
+        </button>
+        <a href="index.html#contact" class="hidden md:inline-flex items-center gap-2 btn-primary bg-accent text-white text-sm font-medium px-5 py-2 rounded-full hover:bg-accent-light transition-colors">Let's connect →</a>
+        <button @click="mobileMenu=!mobileMenu" class="md:hidden w-9 h-9 flex items-center justify-center rounded-full border border-zinc-200 dark:border-zinc-800" aria-label="Toggle menu">
+          <svg x-show="!mobileMenu" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <svg x-show="mobileMenu" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </nav>
+    <div x-show="mobileMenu" x-cloak
+      x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+      x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-2"
+      class="md:hidden bg-white dark:bg-zinc-950 border-t border-zinc-100 dark:border-zinc-900">
+      <ul class="flex flex-col px-6 py-4 gap-4 text-sm font-medium" role="list">
+        <li><a href="index.html#services" @click="mobileMenu=false" class="block text-zinc-700 dark:text-zinc-300">Skills</a></li>
+        <li><a href="projects.html" @click="mobileMenu=false" class="block text-accent font-medium">Work</a></li>
+        <li><a href="index.html#about" @click="mobileMenu=false" class="block text-zinc-700 dark:text-zinc-300">About</a></li>
+        <li><a href="index.html#ads" @click="mobileMenu=false" class="block text-zinc-700 dark:text-zinc-300">Meta Ads</a></li>
+        <li><a href="index.html#contact" @click="mobileMenu=false" class="block text-zinc-700 dark:text-zinc-300">Contact</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ═══ CASE STUDY HEADER ═══ -->
+    <article>
+      <header class="pt-32 pb-10 max-w-4xl mx-auto px-6">
+
+        <!-- Back link -->
+        <a href="projects.html" class="inline-flex items-center gap-2 text-sm text-zinc-500 dark:text-zinc-400 hover:text-accent transition-colors mb-8">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"/></svg>
+          Back to projects
+        </a>
+
+        <!-- Tags -->
+        <div class="flex flex-wrap items-center gap-3 mb-6">
+          <span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-2.5 py-1 rounded-full">Final Year Project</span>
+          <span class="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2.5 py-1 rounded-full">Flutter</span>
+          <span class="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2.5 py-1 rounded-full">Firebase</span>
+        </div>
+
+        <h1 class="reveal font-display font-bold text-4xl md:text-5xl lg:text-6xl text-zinc-900 dark:text-white leading-tight mb-6">
+          WasteNot — Food Rescue &amp; Donation App
+        </h1>
+
+        <p class="reveal d1 text-xl text-zinc-500 dark:text-zinc-400 leading-relaxed mb-10 max-w-2xl">
+          A mobile app connecting food vendors and restaurants with NGOs, so surplus food gets donated instead of wasted — fighting food waste and hunger at the same time.
+        </p>
+
+        <!-- Meta row -->
+        <div class="reveal d2 grid grid-cols-2 md:grid-cols-4 gap-4 py-8 border-t border-b border-zinc-100 dark:border-zinc-900">
+          <div>
+            <p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Sponsor</p>
+            <p class="font-medium text-zinc-900 dark:text-white text-sm">SOS Children's Village Sialkot</p>
+          </div>
+          <div>
+            <p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">My Role</p>
+            <p class="font-medium text-zinc-900 dark:text-white text-sm">Developer</p>
+          </div>
+          <div>
+            <p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Type</p>
+            <p class="font-medium text-zinc-900 dark:text-white text-sm">Final Year Project</p>
+          </div>
+          <div>
+            <p class="text-xs text-zinc-400 uppercase tracking-widest mb-1">Tech Stack</p>
+            <p class="font-medium text-zinc-900 dark:text-white text-sm">Flutter, Firebase, Firestore, Google Maps</p>
+          </div>
+        </div>
+      </header>
+
+      <!-- ═══ HERO IMAGE ═══ -->
+      <div class="max-w-6xl mx-auto px-6 mb-16">
+        <div class="relative py-8 rounded-3xl bg-zinc-50 dark:bg-zinc-900/50 overflow-hidden">
+          <div class="absolute top-0 left-1/2 -translate-x-1/2 w-72 h-72 bg-accent/10 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+          <div class="reveal phone-mock lg relative">
+            <div class="phone-body">
+              <div class="phone-notch"></div>
+              <div class="phone-screen" style="aspect-ratio:1440/3040">
+                <img src="images/wastenot-welcome.jpeg" alt="WasteNot app welcome screen" loading="eager"/>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ AT A GLANCE ═══ -->
+      <div class="max-w-4xl mx-auto px-6 mb-16">
+        <div class="reveal grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="stat-card bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-5 pl-6">
+            <p class="font-display font-bold text-3xl text-zinc-900 dark:text-white">3</p>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-snug">Role-based modules</p>
+          </div>
+          <div class="stat-card bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-5 pl-6">
+            <p class="font-display font-bold text-3xl text-accent">Live</p>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-snug">Real-time Firestore sync</p>
+          </div>
+          <div class="stat-card bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-5 pl-6">
+            <p class="font-display font-bold text-3xl text-zinc-900 dark:text-white">Maps</p>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-snug">Location-based matching</p>
+          </div>
+          <div class="stat-card bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-5 pl-6">
+            <p class="font-display font-bold text-3xl text-zinc-900 dark:text-white">Auth</p>
+            <p class="text-xs text-zinc-500 dark:text-zinc-400 mt-1 leading-snug">Secure sign-in, ready for Play Store</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══ ARTICLE BODY ═══ -->
+      <div class="max-w-3xl mx-auto px-6 pb-4 prose-cs">
+
+        <h2>The problem</h2>
+        <p>Restaurants and food vendors regularly end up with surplus food at the end of the day, while nearby NGOs are working to feed people who need it. Without an easy way to connect the two, that extra food usually just goes to waste. WasteNot was built to close that gap — a direct channel between donors (restaurants and food vendors) and NGOs, so surplus food gets redistributed instead of thrown away.</p>
+        <p>The project was sponsored by SOS Children's Village Sialkot — an orphanage and child welfare organization — as my final year project, with the goal of building something genuinely usable — not just a class demo, but an app built to a standard where it could realistically be published on the Play Store.</p>
+
+        <h2>Who uses it</h2>
+        <p>The app is built around three distinct roles, each with its own module:</p>
+        <ul>
+          <li><strong>Donors</strong> (restaurants, food vendors) — list surplus food available for pickup</li>
+          <li><strong>NGOs</strong> — browse and claim available donations near them</li>
+          <li><strong>Admins</strong> — oversee the platform and manage activity across both sides</li>
+        </ul>
+        <p>Donors and NGOs can also message each other directly in-app to coordinate pickup details once a donation is accepted — see the inbox below.</p>
+
+      </div>
+
+      <!-- Donation flow screens -->
+      <div class="max-w-5xl mx-auto px-6 mb-4">
+        <div class="reveal grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="phone-mock">
+            <div class="phone-body">
+              <div class="phone-notch"></div>
+              <div class="phone-screen" style="aspect-ratio:1440/3040">
+                <img src="images/wastenot-add-donation.jpeg" alt="WasteNot Add Donation screen" loading="lazy"/>
+              </div>
+            </div>
+          </div>
+          <div class="phone-mock">
+            <div class="phone-body">
+              <div class="phone-notch"></div>
+              <div class="phone-screen" style="aspect-ratio:1440/3040">
+                <img src="images/wastenot-available-donations.jpeg" alt="WasteNot Available Donations list" loading="lazy"/>
+              </div>
+            </div>
+          </div>
+          <div class="phone-mock">
+            <div class="phone-body">
+              <div class="phone-notch"></div>
+              <div class="phone-screen" style="aspect-ratio:1440/3040">
+                <img src="images/wastenot-donation-details.jpeg" alt="WasteNot Donation Details with map" loading="lazy"/>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="img-caption">A donor posts a donation, an NGO browses nearby options, then reviews pickup distance and details on the map before accepting.</p>
+      </div>
+
+      <!-- In-app messaging -->
+      <div class="max-w-5xl mx-auto px-6 mb-4 mt-4">
+        <div class="reveal phone-mock">
+          <div class="phone-body">
+            <div class="phone-notch"></div>
+            <div class="phone-screen" style="aspect-ratio:1440/3040">
+              <img src="images/wastenot-messages.jpeg" alt="WasteNot in-app messages / inbox screen" loading="lazy"/>
+            </div>
+          </div>
+        </div>
+        <p class="img-caption">The inbox — once a donation is accepted, donors and NGOs message each other directly in-app to coordinate the pickup.</p>
+      </div>
+
+      <!-- Donor vs NGO dashboards -->
+      <div class="max-w-5xl mx-auto px-6 mb-4 mt-8">
+        <div class="reveal grid grid-cols-1 md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+          <div class="phone-mock">
+            <div class="phone-body">
+              <div class="phone-notch"></div>
+              <div class="phone-screen" style="aspect-ratio:1440/3040">
+                <img src="images/wastenot-donor-home.jpeg" alt="WasteNot donor home dashboard" loading="lazy"/>
+              </div>
+            </div>
+          </div>
+          <div class="phone-mock">
+            <div class="phone-body">
+              <div class="phone-notch"></div>
+              <div class="phone-screen" style="aspect-ratio:1440/3040">
+                <img src="images/wastenot-ngo-home.jpeg" alt="WasteNot NGO home dashboard" loading="lazy"/>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="img-caption">Separate home dashboards for donors and NGOs — each tracking their own goals and activity.</p>
+      </div>
+
+      <div class="max-w-3xl mx-auto px-6 pb-4 prose-cs">
+        <h2>How it's built</h2>
+        <p>WasteNot is built with Flutter on the front end, giving one codebase for a consistent cross-platform app. The backend runs on Firebase — Firestore handles the real-time data (donation listings, claims, user profiles, messages) and Firebase Authentication handles secure sign-in for both donors and NGOs. Google Maps is integrated so NGOs can see and prioritize nearby donations, since pickup logistics matter just as much as the donation itself.</p>
+      </div>
+
+      <!-- 3-column principles -->
+      <div class="max-w-5xl mx-auto px-6 mb-12">
+        <div class="reveal grid md:grid-cols-3 gap-5">
+          <div class="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-7 border border-zinc-100 dark:border-zinc-800">
+            <div class="w-10 h-10 bg-orange-50 dark:bg-zinc-800 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-1.13a4 4 0 100-8 4 4 0 000 8zm6 3.13a4 4 0 00-3-3.87M5 8a4 4 0 108 0 4 4 0 00-8 0z"/></svg>
+            </div>
+            <h3 class="font-display font-bold text-zinc-900 dark:text-white mb-2" style="font-size:1rem;margin:0 0 .5rem;color:inherit;">Role-based modules</h3>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed" style="margin:0;color:inherit;">Donors, NGOs, and Admins each get their own flow and permissions, instead of one generic interface trying to serve everyone.</p>
+          </div>
+          <div class="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-7 border border-zinc-100 dark:border-zinc-800">
+            <div class="w-10 h-10 bg-orange-50 dark:bg-zinc-800 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
+            </div>
+            <h3 class="font-display font-bold text-zinc-900 dark:text-white mb-2" style="font-size:1rem;margin:0 0 .5rem;color:inherit;">Firestore-first data model</h3>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed" style="margin:0;color:inherit;">Designed the data structure around Firestore's document model from the start, rather than forcing a traditional relational class diagram onto a NoSQL backend.</p>
+          </div>
+          <div class="bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-7 border border-zinc-100 dark:border-zinc-800">
+            <div class="w-10 h-10 bg-orange-50 dark:bg-zinc-800 rounded-xl flex items-center justify-center mb-4">
+              <svg class="w-5 h-5 text-accent" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+            <h3 class="font-display font-bold text-zinc-900 dark:text-white mb-2" style="font-size:1rem;margin:0 0 .5rem;color:inherit;">Location-first matching</h3>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed" style="margin:0;color:inherit;">Google Maps integration so NGOs can see how far a donation is and prioritize pickups that are realistic for them.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="max-w-3xl mx-auto px-6 pb-4 prose-cs">
+        <h2>Process</h2>
+      </div>
+
+      <!-- Process steps -->
+      <div class="max-w-4xl mx-auto px-6 mb-12">
+        <div class="reveal space-y-4">
+          <div class="flex gap-5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-800">
+            <div class="step-badge shrink-0 mt-0.5">1</div>
+            <div>
+              <p class="font-display font-bold text-zinc-900 dark:text-white mb-1">Requirements with the sponsor</p>
+              <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">Worked with SOS Children's Village Sialkot to understand the real donor–NGO gap and scope the app around what would actually get used.</p>
+            </div>
+          </div>
+          <div class="flex gap-5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-800">
+            <div class="step-badge shrink-0 mt-0.5">2</div>
+            <div>
+              <p class="font-display font-bold text-zinc-900 dark:text-white mb-1">UML modeling for three modules</p>
+              <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">Built use case diagrams for the NGO, Donor, and Admin modules, and revised them after invigilator feedback during evaluation.</p>
+            </div>
+          </div>
+          <div class="flex gap-5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-800">
+            <div class="step-badge shrink-0 mt-0.5">3</div>
+            <div>
+              <p class="font-display font-bold text-zinc-900 dark:text-white mb-1">Firebase &amp; Firestore setup</p>
+              <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">Set up Firestore collections for donations, users, and claims, plus Firebase Authentication for secure donor and NGO accounts.</p>
+            </div>
+          </div>
+          <div class="flex gap-5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-800">
+            <div class="step-badge shrink-0 mt-0.5">4</div>
+            <div>
+              <p class="font-display font-bold text-zinc-900 dark:text-white mb-1">Flutter UI for each role</p>
+              <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">Built the donor, NGO, and admin interfaces in Flutter, each tailored to what that role actually needs to do.</p>
+            </div>
+          </div>
+          <div class="flex gap-5 bg-zinc-50 dark:bg-zinc-900 rounded-2xl p-6 border border-zinc-100 dark:border-zinc-800">
+            <div class="step-badge shrink-0 mt-0.5">5</div>
+            <div>
+              <p class="font-display font-bold text-zinc-900 dark:text-white mb-1">Maps integration &amp; polish</p>
+              <p class="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">Added Google Maps for location-based matching and refined the app to a standard ready for Play Store submission.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="max-w-3xl mx-auto px-6 pb-16 prose-cs">
+
+        <h2>A key decision: fitting the model to Firestore</h2>
+        <p>Early on, there was a question of whether to model the data using a traditional object-oriented class diagram, the way you would for a relational database. Since WasteNot runs on Firestore, a NoSQL, document-based database, I instead designed the data structure around Firestore's document/collection model directly — which better reflects how the data actually gets read and written in the app, rather than forcing a relational structure onto a backend that doesn't work that way.</p>
+
+        <h2>Reflections</h2>
+        <!-- Reflection -->
+        <p>Building for a real sponsor taught me to design around actual constraints, not assumptions — next time I'd get NGO and donor feedback earlier, before the UI was mostly finished.</p>
+
+        <hr/>
+        <p><em>Want to know more about how it works? <a href="index.html#contact">Get in touch</a>.</em></p>
+
+      </div>
+    </article>
+
+    <!-- ═══ MORE PROJECTS ═══ -->
+    <section class="bg-zinc-50 dark:bg-zinc-900/50 py-16">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="flex items-center justify-between mb-8">
+          <h2 class="font-display font-bold text-2xl text-zinc-900 dark:text-white">More projects</h2>
+          <a href="projects.html" class="text-sm font-medium text-accent nav-link hidden md:block">View all →</a>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6">
+
+          <article class="reveal card-h group bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-100 dark:border-zinc-800 hover:border-accent transition-colors">
+            <div class="photo-frame w-full h-44">
+              <img src="images/babyfeed-home.png" alt="BabyFeed" loading="lazy"/>
+            </div>
+            <div class="p-5">
+              <div class="flex gap-2 mb-2">
+                <span class="text-xs bg-orange-50 dark:bg-zinc-800 text-accent border border-orange-200 dark:border-zinc-700 px-2.5 py-1 rounded-full">Mobile Apps</span>
+              </div>
+              <a href="babyfeed-case-study.html">
+                <h3 class="font-display font-bold text-base text-zinc-900 dark:text-white mb-2 group-hover:text-accent transition-colors">BabyFeed</h3>
+              </a>
+              <a href="babyfeed-case-study.html" class="text-sm font-medium text-accent nav-link">View case study →</a>
+            </div>
+          </article>
+
+          <article class="reveal card-h group bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-100 dark:border-zinc-800 hover:border-accent transition-colors">
+            <div class="photo-frame w-full h-44">
+              <img src="images/hms-dashboard.png" alt="Hospital Management System" loading="lazy"/>
+            </div>
+            <div class="p-5">
+              <div class="flex gap-2 mb-2">
+                <span class="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2.5 py-1 rounded-full">UI/UX Design</span>
+              </div>
+              <a href="hms-case-study.html">
+                <h3 class="font-display font-bold text-base text-zinc-900 dark:text-white mb-2 group-hover:text-accent transition-colors">Hospital Management System</h3>
+              </a>
+              <a href="hms-case-study.html" class="text-sm font-medium text-accent nav-link">View case study →</a>
+            </div>
+          </article>
+
+          <article class="reveal card-h group bg-white dark:bg-zinc-900 rounded-2xl overflow-hidden border border-zinc-100 dark:border-zinc-800 hover:border-accent transition-colors">
+            <div class="photo-frame w-full h-44">
+              <img src="images/ecommerce-hero.png" alt="Style.Nest E-commerce Website" loading="lazy"/>
+            </div>
+            <div class="p-5">
+              <div class="flex gap-2 mb-2">
+                <span class="text-xs bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 px-2.5 py-1 rounded-full">Web</span>
+              </div>
+              <a href="ecommerce-case-study.html">
+                <h3 class="font-display font-bold text-base text-zinc-900 dark:text-white mb-2 group-hover:text-accent transition-colors">Style.Nest</h3>
+              </a>
+              <a href="ecommerce-case-study.html" class="text-sm font-medium text-accent nav-link">View case study →</a>
+            </div>
+          </article>
+
+        </div>
+        <div class="text-center mt-8 md:hidden">
+          <a href="projects.html" class="text-sm font-medium text-accent">View all projects →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══ CTA ═══ -->
+    <section class="py-24">
+      <div class="max-w-6xl mx-auto px-6">
+        <div class="bg-zinc-900 dark:bg-zinc-800 rounded-3xl p-10 md:p-14 text-center relative overflow-hidden">
+          <div class="absolute top-0 right-0 w-64 h-64 bg-accent/20 rounded-full blur-3xl pointer-events-none" aria-hidden="true"></div>
+          <div class="absolute bottom-0 left-0 w-40 h-40 bg-accent/10 rounded-full blur-2xl pointer-events-none" aria-hidden="true"></div>
+          <div class="relative z-10">
+            <p class="text-xs font-medium text-accent tracking-widest uppercase mb-4">Let's talk</p>
+            <h2 class="font-display font-bold text-3xl md:text-4xl text-white mb-4">Have a role in mind?</h2>
+            <p class="text-zinc-400 max-w-md mx-auto mb-8">I'm looking for entry-level and internship opportunities in software development, and I also take on WordPress projects. Get in touch.</p>
+            <a href="index.html#contact" class="inline-flex items-center gap-2 btn-primary bg-accent text-white font-medium px-8 py-3.5 rounded-full hover:bg-accent-light transition-colors">
+              Get in touch →
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="border-t border-zinc-100 dark:border-zinc-900">
+    <div class="max-w-6xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="text-sm text-zinc-400">© <span id="yr"></span> Ayesha. All rights reserved.</p>
+      <p class="text-xs text-zinc-500">Built with <a href="https://tailwindcss.com" class="hover:text-zinc-900 dark:hover:text-white transition-colors" rel="noopener noreferrer" target="_blank">Tailwind CSS</a> &amp; <a href="https://alpinejs.dev" class="hover:text-zinc-900 dark:hover:text-white transition-colors" rel="noopener noreferrer" target="_blank">Alpine.js</a></p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('yr').textContent = new Date().getFullYear();
+
+    // Reveal on scroll
+    const obs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+      });
+    }, { threshold: .08, rootMargin: '0px 0px -30px 0px' });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  </script>
+
+</body>
+</html>
